@@ -1,0 +1,40 @@
+name: Linux_FuncApp_Container_CICD
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@master
+
+    - name: 'Login via Azure CLI'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Azure CLI script
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az acr build --registry aznative.azurecr.io --image funcapp:v0.1 .
+
+    - name: 'Run Azure Functions Container Action'
+      uses: Azure/functions-container-action@v1
+      id: fa
+      with:
+        app-name: funcapp
+        image: aznative.azurecr.io/funcapp:v0.1
+
+    - name: 'use the published functionapp url in upcoming steps'
+      run: |
+       echo "${{ steps.fa.outputs.app-url }}"
+    - name: Azure logout
+      run: |
+        az logout
