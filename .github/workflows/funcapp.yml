@@ -1,6 +1,7 @@
 name: Linux_FuncApp_Container_CICD
 
 on:
+  workflow_dispatch:
   push:
     branches:
     - main
