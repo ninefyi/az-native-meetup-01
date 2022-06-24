@@ -14,6 +14,10 @@ jobs:
     - name: 'Checkout GitHub Action'
       uses: actions/checkout@master
 
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
     - name: 'Login via Azure CLI'
       uses: azure/login@v1
       with:
@@ -22,16 +26,16 @@ jobs:
     - name: Azure CLI script
       uses: azure/CLI@v1
       with:
-        azcliversion: 2.30.0
+        azcliversion: 2.37.0
         inlineScript: |
-          az acr build --registry aznative.azurecr.io --image funcapp:v0.1 .
+          az acr build --registry aznative.azurecr.io --image funcapp:v${{ steps.date.outputs.date }} .
 
     - name: 'Run Azure Functions Container Action'
       uses: Azure/functions-container-action@v1
       id: fa
       with:
         app-name: funcapp
-        image: aznative.azurecr.io/funcapp:v0.1
+        image: aznative.azurecr.io/funcapp:v${{ steps.date.outputs.date }}
 
     - name: 'use the published functionapp url in upcoming steps'
       run: |
